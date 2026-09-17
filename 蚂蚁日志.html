@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>节肢动物日志</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --text: #111111;
+    --text-light: #666666;
+    --border: #e0e0e0;
+    --accent: #111111;
+    --accent-soft: #f5f5f5;
+    --danger: #c0392b;
+  }
+  [data-theme="orange"] {
+    --bg: #fff9f2; --card: #ffffff; --text: #3d2a14; --text-light: #8a7050;
+    --border: #f0dcc4; --accent: #e07b2a; --accent-soft: #fff1e0; --danger: #c0392b;
+  }
+  [data-theme="green"] {
+    --bg: #f4faf4; --card: #ffffff; --text: #1e3a1e; --text-light: #5f7a5f;
+    --border: #d3e8d3; --accent: #3a8f3a; --accent-soft: #eaf6ea; --danger: #c0392b;
+  }
+  [data-theme="blue"] {
+    --bg: #f3f8fd; --card: #ffffff; --text: #16324f; --text-light: #5c7a99;
+    --border: #d0e2f2; --accent: #2a6fb0; --accent-soft: #e6f1fb; --danger: #c0392b;
+  }
+  [data-theme="red"] {
+    --bg: #fdf5f5; --card: #ffffff; --text: #3d1414; --text-light: #8a5555;
+    --border: #f2d0d0; --accent: #b02a2a; --accent-soft: #fbe8e8; --danger: #c0392b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+    line-height: 1.7;
+    padding: 1.5rem 1rem 4rem;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+  }
+
+  h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.05em; }
+  h1 span { color: var(--accent); }
+
+  .theme-bar { display: flex; gap: 0.5rem; align-items: center; }
+
+  .theme-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--border); cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .theme-dot:hover { transform: scale(1.15); }
+  .theme-dot.active { border-color: var(--accent); border-width: 3px; }
+  .dot-black { background: #111; }
+  .dot-orange { background: #e07b2a; }
+  .dot-green { background: #3a8f3a; }
+  .dot-blue { background: #2a6fb0; }
+  .dot-red { background: #b02a2a; }
+
+  .btn {
+    display: inline-block; background: var(--accent); color: #fff;
+    border: none; padding: 0.6rem 1.4rem; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s; font-family: inherit;
+  }
+  .btn:hover { opacity: 0.88; }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-outline { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn-sm { padding: 0.35rem 0.9rem; font-size: 0.85rem; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1.5px solid var(--danger); }
+
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.4rem 1.5rem; margin-bottom: 1.2rem;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .card h2 { font-size: 1.15rem; margin-bottom: 1rem; color: var(--accent); font-weight: 700; }
+
+  .nest-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+  }
+
+  .nest-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .nest-latin { font-style: italic; color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.6rem; }
+
+  .nest-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; font-size: 0.95rem; margin-top: 0.6rem; }
+  .stat { display: flex; align-items: baseline; gap: 0.35rem; }
+  .stat-num { font-size: 1.3rem; font-weight: 700; color: var(--accent); }
+  .stat-label { color: var(--text-light); font-size: 0.85rem; }
+
+  .nest-note {
+    margin-top: 0.9rem; padding: 0.7rem 0.9rem;
+    background: var(--accent-soft); border-radius: 8px;
+    font-size: 0.9rem; color: var(--text);
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  .log-list { margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 1rem; }
+  .log-item { padding: 0.7rem 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
+  .log-item:last-child { border-bottom: none; }
+  .log-time { color: var(--text-light); font-size: 0.8rem; margin-bottom: 0.25rem; }
+  .log-body { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+  .log-body b { color: var(--accent); }
+  .log-note {
+    margin-top: 0.35rem; color: var(--text);
+    white-space: pre-wrap; word-break: break-word;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem 1rem; }
+  .form-grid .full { grid-column: 1 / -1; }
+
+  label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text); }
+  label .opt { font-weight: 400; color: var(--text-light); font-size: 0.78rem; }
+
+  input[type="text"], input[type="number"], textarea {
+    width: 100%; padding: 0.55rem 0.8rem;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text);
+    font-family: inherit; font-size: 0.92rem;
+    transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .char-count { text-align: right; font-size: 0.75rem; color: var(--text-light); margin-top: 0.2rem; }
+
+  .form-actions { margin-top: 1.2rem; display: flex; gap: 0.7rem; flex-wrap: wrap; }
+
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-light); font-size: 0.95rem; }
+  .empty-icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+
+  .nest-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; }
+
+  .hidden { display: none !important; }
+
+  .footer-note { text-align: center; font-size: 0.78rem; color: var(--text-light); margin-top: 2.5rem; }
+
+  /* ===== 类别选择 ===== */
+  .category-tabs {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .category-tab {
+    padding: 0.5rem 1.2rem;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .category-tab:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .category-tab.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .tag-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.1rem 0.5rem;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--border);
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+
+  /* ===== 折叠 ===== */
+  .nest-header.collapsible { cursor: pointer; user-select: none; }
+  .nest-header.collapsible::after {
+    content: "▼"; font-size: 0.7rem; color: var(--text-light);
+    margin-left: 0.5rem; transition: transform 0.2s;
+    flex-shrink: 0; align-self: center;
+  }
+  .card.collapsed .nest-header.collapsible::after { transform: rotate(-90deg); }
+  .card.collapsed .nest-stats,
+  .card.collapsed .nest-note,
+  .card.collapsed .log-list,
+  .card.collapsed .nest-actions,
+  .card.collapsed .log-form,
+  .card.collapsed .photo-section { display: none !important; }
+
+  /* ===== 照片 ===== */
+  .photo-section { margin-top: 1rem; border-top: 1px dashed var(--border); padding-top: 1rem; }
+
+  .photo-title {
+    font-size: 0.85rem; font-weight: 600; color: var(--text-light);
+    margin-bottom: 0.6rem;
+  }
+
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.6rem;
+  }
+
+  .photo-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--accent-soft);
+    cursor: pointer;
+  }
+
+  .photo-thumb img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+
+  .photo-thumb .photo-del {
+    position: absolute; top: 2px; right: 2px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); color: #fff;
+    border: none; cursor: pointer; font-size: 12px;
+    line-height: 1; display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .photo-thumb:hover .photo-del { opacity: 1; }
+
+  .photo-add {
+    aspect-ratio: 1;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0.2rem;
+    cursor: pointer;
+    color: var(--text-light);
+    font-size: 0.75rem;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .photo-add:hover { border-color: var(--accent); color: var(--accent); }
+  .photo-add-icon { font-size: 1.4rem; }
+
+  .photo-input { display: none; }
+
+  .photo-hint {
+    margin-top: 0.6rem;
+    font-size: 0.72rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  /* 大图预览 */
+  .lightbox {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+  }
+  .lightbox img {
+    max-width: 100%; max-height: 100%;
+    border-radius: 8px; object-fit: contain;
+  }
+  .lightbox-close {
+    position: absolute; top: 1rem; right: 1.2rem;
+    background: none; border: none; color: #fff;
+    font-size: 2rem; cursor: pointer; line-height: 1;
+  }
+
+  @media (max-width: 560px) {
+    .form-grid { grid-template-columns: 1fr; }
+    h1 { font-size: 1.25rem; }
+    .card { padding: 1.1rem 1rem; }
+    .photo-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>🕷️ 节肢动物<span>日志</span></h1>
+    <div class="theme-bar" id="themeBar">
+      <div class="theme-dot dot-black active" data-theme="black" title="黑白"></div>
+      <div class="theme-dot dot-orange" data-theme="orange" title="橙白"></div>
+      <div class="theme-dot dot-green" data-theme="green" title="绿白"></div>
+      <div class="theme-dot dot-blue" data-theme="blue" title="蓝白"></div>
+      <div class="theme-dot dot-red" data-theme="red" title="红白"></div>
+    </div>
+  </header>
+
+  <div id="newNestSection">
+    <button class="btn" id="showNewNestBtn">＋ 创建记录</button>
+  </div>
+
+  <div class="card hidden" id="newNestForm">
+    <h2>创建新记录</h2>
+
+    <div class="category-tabs" id="categoryTabs">
+      <button class="category-tab active" data-cat="ant">🐜 蚁科</button>
+      <button class="category-tab" data-cat="spider">🕷️ 蛛形纲</button>
+    </div>
+
+    <input type="hidden" id="category" value="ant">
+
+    <div class="form-grid">
+      <div>
+        <label>物种 <span class="opt">必填</span></label>
+        <input type="text" id="species" placeholder="例如：巨首芭切叶蚁">
+      </div>
+      <div>
+        <label>拉丁学名 <span class="opt">选填</span></label>
+        <input type="text" id="latin" placeholder="例如：Atta cephalotes">
+      </div>
+      <div>
+        <label>昵称 <span class="opt">选填</span></label>
+        <input type="text" id="nickname" placeholder="例如：小芭">
+      </div>
+
+      <!-- 蚁科字段 -->
+      <div class="ant-field">
+        <label>蚁后数量 <span class="opt">必填</span></label>
+        <input type="number" id="queenCount" min="0" value="1">
+      </div>
+      <div class="ant-field">
+        <label>工蚁数量 <span class="opt">必填</span></label>
+        <input type="number" id="workerCount" min="0" value="0">
+      </div>
+
+      <!-- 蛛形纲字段 -->
+      <div class="spider-field hidden">
+        <label>龄级 <span class="opt">填数字</span></label>
+        <input type="number" id="instar" min="0" value="0" placeholder="例如：3">
+      </div>
+      <div class="spider-field hidden">
+        <label>体长 <span class="opt">选填</span></label>
+        <input type="text" id="bodyLength" placeholder="例如：12mm">
+      </div>
+
+      <div class="full">
+        <label>备注 <span class="opt">选填，不超过200字</span></label>
+        <textarea id="nestNote" maxlength="200" placeholder="记录采集地、环境、状态等…"></textarea>
+        <div class="char-count"><span id="nestNoteCount">0</span>/200</div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" id="saveNestBtn">保存记录</button>
+      <button class="btn btn-outline" id="cancelNestBtn">取消</button>
+    </div>
+  </div>
+
+  <div id="nestList"></div>
+
+  <div class="card" style="margin-top:1.5rem;">
+    <h2>数据管理</h2>
+    <p style="font-size:0.85rem;color:var(--text-light);margin-bottom:1rem;">
+      数据默认保存在本机浏览器中。换设备或清缓存前，建议先导出备份。
+    </p>
+    <div class="form-actions">
+      <button class="btn btn-outline btn-sm" id="exportBtn">⬇ 导出数据</button>
+      <button class="btn btn-outline btn-sm" id="importBtn">⬆ 导入数据</button>
+      <input type="file" id="importFile" accept=".json" class="hidden">
+      <button class="btn btn-danger btn-sm" id="clearBtn">清空所有数据</button>
+    </div>
+  </div>
+
+  <div class="footer-note">数据自动保存在本机浏览器中 · 清除浏览器数据会丢失日志</div>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "arthropod_log_data_v2";
+  const THEME_KEY = "ant_log_theme_v1";
+
+  let nests = [];
+  let currentCategory = "ant";
+
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  function escapeHtml(str) {
+    if (str === undefined || str === null) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function formatTime(ts) {
+    const d = new Date(ts);
+    const pad = n => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) nests = parsed;
+      }
+    } catch (e) {
+      console.warn("读取数据失败", e);
+    }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nests));
+    } catch (e) {
+      console.warn("保存失败", e);
+      if (e.name === "QuotaExceededError") {
+        alert("存储空间已满，建议删除部分照片或导出备份后清理。");
+      }
+    }
+  }
+
+  function loadTheme() {
+    let theme = "black";
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved) theme = saved;
+    } catch (e) {}
+    applyTheme(theme);
+  }
+
+  function applyTheme(theme) {
+    if (theme === "black") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+    document.querySelectorAll(".theme-dot").forEach(dot => {
+      dot.classList.toggle("active", dot.dataset.theme === theme);
+    });
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch (e) {}
+  }
+
+  document.getElementById("themeBar").addEventListener("click", function (e) {
+    const dot = e.target.closest(".theme-dot");
+    if (dot) applyTheme(dot.dataset.theme);
+  });
+
+  // ===== 类别切换：蚁科显示蚁后/工蚁，蛛形纲显示龄级/体长 =====
+  const categoryTabs = document.getElementById("categoryTabs");
+  const categoryInput = document.getElementById("category");
+
+  function switchCategory(cat) {
+    currentCategory = cat;
+    categoryInput.value = cat;
+
+    document.querySelectorAll(".category-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.cat === cat);
+    });
+
+    // 蚁科字段
+    document.querySelectorAll(".ant-field").forEach(el => {
+      el.classList.toggle("hidden", cat !== "ant");
+    });
+    // 蛛形纲字段
+    document.querySelectorAll(".spider-field").forEach(el => {
+      el.classList.toggle("hidden", cat !== "spider");
+    });
+
+    // 备注提示
+    const noteEl = document.getElementById("nestNote");
+    if (cat === "ant") {
+      noteEl.placeholder = "记录蚁巢位置、环境、群落状态等…";
+    } else {
+      noteEl.placeholder = "记录发现地点、结网/游猎、环境等…";
+    }
+  }
+
+  categoryTabs.addEventListener("click", function (e) {
+    const tab = e.target.closest(".category-tab");
+    if (!tab) return;
+    switchCategory(tab.dataset.cat);
+  });
+
+  const newNestForm = document.getElementById("newNestForm");
+  const newNestSection = document.getElementById("newNestSection");
+
+  document.getElementById("showNewNestBtn").addEventListener("click", function () {
+    newNestForm.classList.remove("hidden");
+    newNestSection.classList.add("hidden");
+    switchCategory(currentCategory);
+    document.getElementById("species").focus();
+  });
+
+  document.getElementById("cancelNestBtn").addEventListener("click", function () {
+    resetNestForm();
+    newNestForm.classList.add("hidden");
+    newNestSection.classList.remove("hidden");
+  });
+
+  document.getElementById("nestNote").addEventListener("input", function () {
+    document.getElementById("nestNoteCount").textContent = this.value.length;
+  });
+
+  function resetNestForm() {
+    document.getElementById("species").value = "";
+    document.getElementById("latin").value = "";
+    document.getElementById("nickname").value = "";
+    document.getElementById("queenCount").value = "1";
+    document.getElementById("workerCount").value = "0";
+    document.getElementById("instar").value = "0";
+    document.getElementById("bodyLength").value = "";
+    document.getElementById("nestNote").value = "";
+    document.getElementById("nestNoteCount").textContent = "0";
+  }
+
+  document.getElementById("saveNestBtn").addEventListener("click", function () {
+    const species = document.getElementById("species").value.trim();
+    if (!species) {
+      alert("请填写物种");
+      return;
+    }
+
+    const cat = categoryInput.value || "ant";
+
+    const nest = {
+      id: uid(),
+      category: cat,
+      species: species,
+      latin: document.getElementById("latin").value.trim(),
+      nickname: document.getElementById("nickname").value.trim(),
+      note: document.getElementById("nestNote").value.trim(),
+      createdAt: Date.now(),
+      logs: [],
+      photos: [],
+      _collapsed: false
+    };
+
+    if (cat === "ant") {
+      nest.queenCount = parseInt(document.getElementById("queenCount").value, 10) || 0;
+      nest.workerCount = parseInt(document.getElementById("workerCount").value, 10) || 0;
+    } else {
+      nest.instar = parseInt(document.getElementById("instar").value, 10) || 0;
+      nest.bodyLength = document.getElementById("bodyLength").value.trim();
+    }
+
+    nests.unshift(nest);
+    save();
+    resetNestForm();
+    newNestForm.classList.add("hidden");
+    newNestSection.classList.remove("hidden");
+    render();
+  });
+
+  // ================= 图片处理 =================
+
+  function processImage(file) {
+    return new Promise((resolve, reject) => {
+      const name = (file.name || "").toLowerCase();
+      const type = (file.type || "").toLowerCase();
+      const isHeic = /\.(heic|heif)$/.test(name) || type.includes("heic") || type.includes("heif");
+
+      const finish = (source) => {
+        const img = new Image();
+        img.onload = function () {
+          try {
+            const MAX = 1200;
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            if (!w || !h) {
+              reject(new Error("图片尺寸无效"));
+              return;
+            }
+            if (w > MAX || h > MAX) {
+              const ratio = Math.min(MAX / w, MAX / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, w, h);
+            ctx.drawImage(img, 0, 0, w, h);
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            resolve(dataUrl);
+          } catch (err) {
+            reject(err);
+          }
+        };
+        img.onerror = function () {
+          reject(new Error("图片加载失败，可能格式不受支持"));
+        };
+        img.src = source;
+      };
+
+      if (isHeic) {
+        if (typeof window.heic2any === "undefined") {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js";
+          script.onload = function () {
+            window.heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 })
+              .then(function (result) {
+                const blob = Array.isArray(result) ? result[0] : result;
+                const url = URL.createObjectURL(blob);
+                finish(url);
+              })
+              .catch(function (err) {
+                reject(new Error("HEIC 转换失败：" + err.message));
+              });
+          };
+          script.onerror = function () {
+            reject(new Error("无法加载 HEIC 转换库，请检查网络"));
+          };
+          document.head.appendChild(script);
+        } else {
+          window.heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 })
+            .then(function (result) {
+              const blob = Array.isArray(result) ? result[0] : result;
+              const url = URL.createObjectURL(blob);
+              finish(url);
+            })
+            .catch(function (err) {
+              reject(new Error("HEIC 转换失败：" + err.message));
+            });
+        }
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        finish(e.target.result);
+      };
+      reader.onerror = function () {
+        reject(new Error("文件读取失败"));
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ================= 渲染 =================
+
+  const nestList = document.getElementById("nestList");
+
+  function renderPhotos(photos, nestId, logIndex) {
+    let html = `<div class="photo-section">`;
+    html += `<div class="photo-title">📷 照片 ${photos && photos.length ? "(" + photos.length + ")" : ""}</div>`;
+    html += `<div class="photo-grid">`;
+
+    if (photos && photos.length) {
+      photos.forEach((p, idx) => {
+        html += `
+          <div class="photo-thumb">
+            <img src="${p}" alt="照片" loading="lazy" data-full="${p}">
+            <button class="photo-del" data-nest="${nestId}" data-log="${logIndex === null ? "" : logIndex}" data-idx="${idx}" title="删除">×</button>
+          </div>`;
+      });
+    }
+
+    const dataLog = logIndex === null ? "" : logIndex;
+    html += `
+      <label class="photo-add" data-nest="${nestId}" data-log="${dataLog}">
+        <span class="photo-add-icon">＋</span>
+        <span>添加</span>
+        <input type="file" class="photo-input" accept=".heic,.heif,.bmp,.jpg,.jpeg,.png,image/*" multiple>
+      </label>
+    `;
+
+    html += `</div>`;
+    html += `<div class="photo-hint">支持 HEIC/HEIF、BMP、JPEG/JPG、PNG · 照片压缩后保存在本机浏览器 · 建议定期导出备份，存储空间有限</div>`;
+    html += `</div>`;
+    return html;
+  }
+
+  function categoryLabel(cat) {
+    return cat === "spider" ? "🕷️ 蛛形纲" : "🐜 蚁科";
+  }
+
+  function renderStats(nest) {
+    let html = `<div class="nest-stats">`;
+    if (nest.category === "spider") {
+      html += `<div class="stat"><span class="stat-num">${nest.instar || 0}</span><span class="stat-label">龄级</span></div>`;
+      if (nest.bodyLength) {
+        html += `<div class="stat"><span class="stat-num">${escapeHtml(nest.bodyLength)}</span><span class="stat-label">体长</span></div>`;
+      }
+    } else {
+      html += `<div class="stat"><span class="stat-num">${nest.queenCount || 0}</span><span class="stat-label">蚁后</span></div>`;
+      html += `<div class="stat"><span class="stat-num">${nest.workerCount || 0}</span><span class="stat-label">工蚁</span></div>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  function renderLogForm(nest) {
+    const isAnt = nest.category !== "spider";
+    let html = `<div class="log-form hidden" data-log-form="${nest.id}" style="margin-top:1rem;border-top:1px dashed var(--border);padding-top:1rem;">`;
+    html += `<div class="form-grid">`;
+
+    if (isAnt) {
+      html += `
+        <div>
+          <label>蚁后数量</label>
+          <input type="number" class="log-queen" min="0" value="${nest.queenCount || 0}">
+        </div>
+        <div>
+          <label>工蚁数量</label>
+          <input type="number" class="log-worker" min="0" value="${nest.workerCount || 0}">
+        </div>`;
+    } else {
+      html += `
+        <div>
+          <label>龄级</label>
+          <input type="number" class="log-instar" min="0" value="${nest.instar || 0}">
+        </div>
+        <div>
+          <label>体长 <span class="opt">选填</span></label>
+          <input type="text" class="log-body-length" value="${escapeHtml(nest.bodyLength || "")}" placeholder="例如：12mm">
+        </div>`;
+    }
+
+    html += `
+      <div class="full">
+        <label>备注 <span class="opt">选填，不超过200字</span></label>
+        <textarea class="log-note-input" maxlength="200" placeholder="记录变化、观察、投喂等…"></textarea>
+      </div>
+      <div class="full">
+        <label>照片 <span class="opt">选填，可多选（HEIC/HEIF、BMP、JPEG/JPG、PNG）</span></label>
+        <input type="file" class="log-photo-input" accept=".heic,.heif,.bmp,.jpg,.jpeg,.png,image/*" multiple>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-sm save-log-btn" data-id="${nest.id}">保存日志</button>
+      <button class="btn btn-outline btn-sm cancel-log-btn" data-id="${nest.id}">取消</button>
+    </div>
+    </div>`;
+
+    return html;
+  }
+
+  function renderLogBody(nest, log) {
+    let html = `<div class="log-body">`;
+    if (nest.category === "spider") {
+      html += `<span>龄级 <b>${log.instar || 0}</b></span>`;
+      if (log.bodyLength) {
+        html += `<span>体长 <b>${escapeHtml(log.bodyLength)}</b></span>`;
+      }
+    } else {
+      html += `<span>蚁后 <b>${log.queenCount || 0}</b></span>`;
+      html += `<span>工蚁 <b>${log.workerCount || 0}</b></span>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  function render() {
+    if (nests.length === 0) {
+      nestList.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🕷️</div>
+          <div>还没有记录</div>
+          <div style="margin-top:0.4rem;font-size:0.85rem;">点击上方按钮，创建你的第一条记录</div>
+        </div>`;
+      return;
+    }
+
+    let html = "";
+    nests.forEach(nest => {
+      const title = nest.nickname ? nest.nickname : nest.species;
+      const sub = nest.nickname ? nest.species : "";
+      const collapsed = nest._collapsed ? " collapsed" : "";
+      const cat = nest.category || "ant";
+
+      html += `<div class="card${collapsed}" data-nest="${nest.id}">`;
+      html += `<div class="nest-header collapsible" data-id="${nest.id}">`;
+      html += `<div>`;
+      html += `<div class="nest-title">${escapeHtml(title)}<span class="tag-badge">${categoryLabel(cat)}</span></div>`;
+      if (sub) html += `<div class="nest-latin">${escapeHtml(sub)}</div>`;
+      if (nest.latin) html += `<div class="nest-latin">${escapeHtml(nest.latin)}</div>`;
+      html += `</div>`;
+      html += `<button class="btn btn-danger btn-sm delete-nest-btn" data-id="${nest.id}">删除</button>`;
+      html += `</div>`;
+
+      html += renderStats(nest);
+
+      if (nest.note) {
+        html += `<div class="nest-note">${escapeHtml(nest.note)}</div>`;
+      }
+
+      html += renderPhotos(nest.photos || [], nest.id, null);
+
+      if (nest.logs && nest.logs.length > 0) {
+        html += `<div class="log-list">`;
+        nest.logs.forEach((log, logIndex) => {
+          html += `<div class="log-item">`;
+          html += `<div class="log-time">${formatTime(log.time)}</div>`;
+          html += renderLogBody(nest, log);
+          if (log.note) {
+            html += `<div class="log-note">${escapeHtml(log.note)}</div>`;
+          }
+          if (log.photos && log.photos.length) {
+            html += renderPhotos(log.photos, nest.id, logIndex);
+          }
+          html += `</div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `<div class="nest-actions">`;
+      html += `<button class="btn btn-outline btn-sm add-log-btn" data-id="${nest.id}">＋ 添加日志</button>`;
+      html += `</div>`;
+
+      html += renderLogForm(nest);
+
+      html += `</div>`;
+    });
+
+    nestList.innerHTML = html;
+  }
+
+  // ================= 事件 =================
+
+  nestList.addEventListener("click", function (e) {
+    const target = e.target;
+
+    if (target.tagName === "IMG" && target.dataset.full) {
+      openLightbox(target.dataset.full);
+      return;
+    }
+
+    const delPhoto = target.closest(".photo-del");
+    if (delPhoto) {
+      e.stopPropagation();
+      const nestId = delPhoto.dataset.nest;
+      const logIndexRaw = delPhoto.dataset.log;
+      const idx = parseInt(delPhoto.dataset.idx, 10);
+      const nest = nests.find(n => n.id === nestId);
+      if (!nest) return;
+
+      if (logIndexRaw === "" || logIndexRaw === undefined) {
+        if (nest.photos && nest.photos[idx] !== undefined) {
+          if (!confirm("确定删除这张照片吗？")) return;
+          nest.photos.splice(idx, 1);
+        }
+      } else {
+        const logIndex = parseInt(logIndexRaw, 10);
+        const log = nest.logs[logIndex];
+        if (log && log.photos && log.photos[idx] !== undefined) {
+          if (!confirm("确定删除这张照片吗？")) return;
+          log.photos.splice(idx, 1);
+        }
+      }
+      save();
+      render();
+      return;
+    }
+
+    const header = target.closest(".nest-header.collapsible");
+    if (header && !target.closest(".delete-nest-btn")) {
+      const id = header.dataset.id;
+      const nest = nests.find(n => n.id === id);
+      if (nest) {
+        nest._collapsed = !nest._collapsed;
+        save();
+        render();
+      }
+      return;
+    }
+
+    const delBtn = target.closest(".delete-nest-btn");
+    if (delBtn) {
+      const id = delBtn.dataset.id;
+      if (confirm("确定删除这条记录及其所有日志吗？此操作不可恢复。")) {
+        nests = nests.filter(n => n.id !== id);
+        save();
+        render();
+      }
+      return;
+    }
+
+    const addBtn = target.closest(".add-log-btn");
+    if (addBtn) {
+      const id = addBtn.dataset.id;
+      const form = nestList.querySelector(`[data-log-form="${id}"]`);
+      if (form) form.classList.toggle("hidden");
+      return;
+    }
+
+    const cancelBtn = target.closest(".cancel-log-btn");
+    if (cancelBtn) {
+      const id = cancelBtn.dataset.id;
+      const form = nestList.querySelector(`[data-log-form="${id}"]`);
+      if (form) {
+        form.classList.add("hidden");
+        form.querySelector(".log-note-input").value = "";
+        form.querySelector(".log-photo-input").value = "";
+      }
+      return;
+    }
+
+    const saveBtn = target.closest(".save-log-btn");
+    if (saveBtn) {
+      const id = saveBtn.dataset.id;
+      const nest = nests.find(n => n.id === id);
+      if (!nest) return;
+
+      const form = nestList.querySelector(`[data-log-form="${id}"]`);
+      const note = form.querySelector(".log-note-input").value.trim();
+      const photoInput = form.querySelector(".log-photo-input");
+      const isAnt = nest.category !== "spider";
+
+      let queenCount = 0, workerCount = 0, instar = 0, bodyLength = "";
+      if (isAnt) {
+        queenCount = parseInt(form.querySelector(".log-queen").value, 10) || 0;
+        workerCount = parseInt(form.querySelector(".log-worker").value, 10) || 0;
+      } else {
+        instar = parseInt(form.querySelector(".log-instar").value, 10) || 0;
+        bodyLength = form.querySelector(".log-body-length").value.trim();
+      }
+
+      const addLog = (photos) => {
+        if (!nest.logs) nest.logs = [];
+        const logEntry = {
+          time: Date.now(),
+          note: note,
+          photos: photos || []
+        };
+        if (isAnt) {
+          logEntry.queenCount = queenCount;
+          logEntry.workerCount = workerCount;
+          nest.queenCount = queenCount;
+          nest.workerCount = workerCount;
+        } else {
+          logEntry.instar = instar;
+          logEntry.bodyLength = bodyLength;
+          nest.instar = instar;
+          nest.bodyLength = bodyLength;
+        }
+        nest.logs.unshift(logEntry);
+        save();
+        render();
+      };
+
+      if (photoInput && photoInput.files && photoInput.files.length) {
+        const files = Array.from(photoInput.files);
+        const results = [];
+        let idx = 0;
+        const next = () => {
+          if (idx >= files.length) {
+            addLog(results);
+            return;
+          }
+          processImage(files[idx])
+            .then(dataUrl => {
+              results.push(dataUrl);
+              idx++;
+              next();
+            })
+            .catch(err => {
+              alert("处理照片失败：" + err.message);
+              idx++;
+              next();
+            });
+        };
+        next();
+      } else {
+        addLog([]);
+      }
+      return;
+    }
+  });
+
+  nestList.addEventListener("change", function (e) {
+    const input = e.target;
+    if (!input.classList || !input.classList.contains("photo-input")) return;
+
+    const label = input.closest(".photo-add");
+    if (!label) return;
+    const nestId = label.dataset.nest;
+    const logIndexRaw = label.dataset.log;
+    const nest = nests.find(n => n.id === nestId);
+    if (!nest) return;
+
+    const files = input.files ? Array.from(input.files) : [];
+    if (!files.length) return;
+
+    const results = [];
+    let idx = 0;
+
+    const done = () => {
+      if (results.length) {
+        if (logIndexRaw === "" || logIndexRaw === undefined) {
+          if (!nest.photos) nest.photos = [];
+          nest.photos.push(...results);
+        } else {
+          const logIndex = parseInt(logIndexRaw, 10);
+          const log = nest.logs[logIndex];
+          if (log) {
+            if (!log.photos) log.photos = [];
+            log.photos.push(...results);
+          }
+        }
+        save();
+        render();
+      }
+      input.value = "";
+    };
+
+    const next = () => {
+      if (idx >= files.length) {
+        done();
+        return;
+      }
+      processImage(files[idx])
+        .then(dataUrl => {
+          results.push(dataUrl);
+          idx++;
+          next();
+        })
+        .catch(err => {
+          alert("处理照片失败：" + err.message);
+          idx++;
+          next();
+        });
+    };
+    next();
+  });
+
+  function openLightbox(src) {
+    const box = document.createElement("div");
+    box.className = "lightbox";
+    box.innerHTML = `<button class="lightbox-close" title="关闭">×</button><img src="${src}" alt="预览">`;
+    box.addEventListener("click", function (e) {
+      if (e.target === box || e.target.classList.contains("lightbox-close")) {
+        document.body.removeChild(box);
+      }
+    });
+    document.addEventListener("keydown", function esc(e) {
+      if (e.key === "Escape") {
+        if (document.body.contains(box)) document.body.removeChild(box);
+        document.removeEventListener("keydown", esc);
+      }
+    });
+    document.body.appendChild(box);
+  }
+
+  document.getElementById("exportBtn").addEventListener("click", function () {
+    const data = {
+      version: 2,
+      exportedAt: Date.now(),
+      nests: nests
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const d = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    a.href = url;
+    a.download = `节肢动物日志_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  document.getElementById("importBtn").addEventListener("click", function () {
+    document.getElementById("importFile").click();
+  });
+
+  document.getElementById("importFile").addEventListener("change", function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (ev) {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!data || !Array.isArray(data.nests)) {
+          alert("文件格式不正确");
+          return;
+        }
+        if (!confirm("导入将覆盖当前所有数据，确定继续吗？")) return;
+        nests = data.nests;
+        save();
+        render();
+        alert("导入成功");
+      } catch (err) {
+        alert("文件解析失败，请确认是本页面导出的 JSON 文件");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.getElementById("clearBtn").addEventListener("click", function () {
+    if (!confirm("确定清空所有记录吗？此操作不可恢复。")) return;
+    if (!confirm("再次确认：真的要清空全部数据吗？")) return;
+    nests = [];
+    save();
+    render();
+  });
+
+  load();
+  loadTheme();
+  render();
+
+})();
+</script>
+</body>
+</html>
